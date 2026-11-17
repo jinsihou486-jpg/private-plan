@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="今日学习" />
+  <meta name="theme-color" content="#f4efe6" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#161410" media="(prefers-color-scheme: dark)" />
+  <title>今日学习</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon.png" />
+  <style>
+    :root {
+      --bg: #f4efe6;
+      --bg-2: #ebe4d8;
+      --ink: #1c1915;
+      --muted: #6b645a;
+      --card: #fffcf7;
+      --line: rgba(28,25,21,.08);
+      --accent: #2f6f5e;
+      --accent-soft: #e4f0eb;
+      --done: #2f6f5e;
+      --warn: #9a5b24;
+      --shadow: 0 10px 30px rgba(28,25,21,.06);
+      --radius: 22px;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #161410;
+        --bg-2: #201c16;
+        --ink: #f3eee6;
+        --muted: #b3aa9d;
+        --card: #221e18;
+        --line: rgba(243,238,230,.1);
+        --accent: #7dbea9;
+        --accent-soft: #24332e;
+        --done: #7dbea9;
+        --warn: #e0a066;
+        --shadow: 0 10px 30px rgba(0,0,0,.28);
+      }
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", sans-serif;
+      background:
+        radial-gradient(1200px 500px at 50% -10%, var(--bg-2), transparent 60%),
+        var(--bg);
+      color: var(--ink);
+      -webkit-tap-highlight-color: transparent;
+      padding: calc(28px + var(--safe-top)) 20px calc(40px + var(--safe-bottom));
+    }
+    .wrap { max-width: 720px; margin: 0 auto; }
+    header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 22px; }
+    h1 { font-size: 28px; letter-spacing: -.03em; margin: 0 0 6px; font-weight: 700; }
+    .date { color: var(--muted); font-size: 15px; }
+    .streak {
+      background: var(--card);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      border-radius: 18px;
+      padding: 12px 16px;
+      min-width: 92px;
+      text-align: right;
+    }
+    .streak b { display: block; font-size: 26px; line-height: 1.1; }
+    .streak span { color: var(--muted); font-size: 12px; }
+    .progress {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow);
+    }
+    .progress-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+    .progress-top strong { font-size: 16px; }
+    .progress-top span { color: var(--muted); font-size: 13px; }
+    .bar { height: 8px; background: var(--bg-2); border-radius: 99px; overflow: hidden; }
+    .bar > i { display: block; height: 100%; width: 0; background: var(--accent); border-radius: 99px; transition: width .35s ease; }
+    .focus {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.55;
+      margin: 10px 0 0;
+    }
+    .tasks { display: grid; gap: 12px; margin: 16px 0 28px; }
+    button.task {
+      appearance: none;
+      width: 100%;
+      text-align: left;
+      border: 1px solid var(--line);
+      background: var(--card);
+      color: inherit;
+      border-radius: var(--radius);
+      padding: 18px 18px 18px 18px;
+      box-shadow: var(--shadow);
+      display: grid;
+      grid-template-columns: 44px 1fr auto;
+      gap: 14px;
+      align-items: center;
+      cursor: pointer;
+      font: inherit;
+      min-height: 96px;
+      transition: transform .12s ease, background .2s ease, border-color .2s ease;
+    }
+    button.task:active { transform: scale(.985); }
+    button.task.done { background: var(--accent-soft); border-color: transparent; }
+    .tick {
+      width: 44px; height: 44px; border-radius: 50%;
+      border: 2px solid var(--line);
+      display: grid; place-items: center;
+      font-size: 22px; color: transparent;
+      background: var(--bg);
+      transition: .2s ease;
+    }
+    button.task.done .tick {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+    .task h2 { margin: 0 0 4px; font-size: 17px; font-weight: 650; }
+    .task p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.45; }
+    .mins { color: var(--muted); font-size: 13px; white-space: nowrap; }
+    button.task.done .mins { color: var(--accent); font-weight: 650; }
+    h3 { font-size: 15px; margin: 0 0 12px; letter-spacing: .02em; color: var(--muted); font-weight: 650; }
+    .cal {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+    }
+    .dow { text-align: center; font-size: 11px; color: var(--muted); padding-bottom: 4px; }
+    .day {
+      aspect-ratio: 1;
+      border-radius: 12px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      font-size: 12px;
+      color: var(--muted);
+      background: transparent;
+    }
+    .day.today { outline: 2px solid var(--accent); outline-offset: -2px; color: var(--ink); font-weight: 700; }
+    .day.l1 { background: color-mix(in srgb, var(--accent) 22%, transparent); color: var(--ink); }
+    .day.l2 { background: color-mix(in srgb, var(--accent) 48%, transparent); color: var(--ink); }
+    .day.l3 { background: var(--accent); color: white; }
+    .day.future { opacity: .45; }
+    .hint { margin-top: 18px; color: var(--muted); font-size: 13px; line-height: 1.55; }
+    .banner {
+      display: none;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin-bottom: 16px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+    .banner.show { display: block; }
+    .banner button {
+      margin-top: 8px;
+      border: 0;
+      background: var(--ink);
+      color: var(--bg);
+      border-radius: 999px;
+      padding: 8px 14px;
+      font: inherit;
+      font-size: 13px;
+    }
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: calc(24px + var(--safe-bottom));
+      transform: translateX(-50%) translateY(20px);
+      background: var(--ink);
+      color: var(--bg);
+      padding: 10px 16px;
+      border-radius: 999px;
+      font-size: 14px;
+      opacity: 0;
+      pointer-events: none;
+      transition: .25s ease;
+      white-space: nowrap;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="banner" id="banner">
+      在 iPad 上用 Safari 打开后，点分享，再选「添加到主屏幕」，以后学完直接点图标打卡，记录会留在这台 iPad 上。
+      <br /><button type="button" id="dismiss-banner">知道了</button>
+    </div>
+    <header>
+      <div>
+        <h1>今日学习</h1>
+        <div class="date" id="date-label"></div>
+      </div>
+      <div class="streak">
+        <b id="streak">0</b>
+        <span>连续打卡</span>
+      </div>
+    </header>
+    <div class="progress">
+      <div class="progress-top">
+        <strong id="progress-label">今天还没开始</strong>
+        <span id="progress-count">0 / 3</span>
+      </div>
+      <div class="bar"><i id="bar"></i></div>
+      <p class="focus" id="focus"></p>
+    </div>
+    <div class="tasks" id="tasks"></div>
+    <div class="cal">
+      <h3>11月17日 — 12月27日</h3>
+      <div class="cal-grid" id="cal"></div>
+    </div>
+    <p class="hint">打卡只保存在这台设备的浏览器里，不会发到别处。清掉 Safari 数据会丢失记录，尽量别清理这个站点的数据。断一天也没关系，从第二天接着就好。</p>
+  </div>
+  <div class="toast" id="toast"></div>
+  <script>
+    const TZ = "Asia/Shanghai";
+    const START = "2026-11-17";
+    const END = "2026-12-27";
+    const EXAM = "2026-12-21";
+    const KEY = "study-checkin-v1";
+
+    const WEEKS = [
+      { from: "2026-11-17", to: "2026-11-23", name: "第1周",
+        main: "计算机网络：分层、协议、IP 和 TCP 基础",
+        side: "数据科学导论：把已讲内容和作业范围理一遍" },
+      { from: "2026-11-24", to: "2026-11-30", name: "第2周",
+        main: "计算机网络：路由、传输层、应用层，开始做题",
+        side: "数据分析理论开头；周末可练一点 Python" },
+      { from: "2026-12-01", to: "2026-12-07", name: "第3周",
+        main: "数据科学导论：概念、方法和作业范围",
+        side: "数据分析理论跟上；网络开始查缺补漏" },
+      { from: "2026-12-08", to: "2026-12-14", name: "第4周",
+        main: "数据分析理论：公式、题型、错题",
+        side: "网络再过一轮；Python 过常考点" },
+      { from: "2026-12-15", to: "2026-12-20", name: "第5周",
+        main: "五门各过一遍薄清单，不再开新的大块",
+        side: "毛概开始记框架：主要理论和重要概念" },
+      { from: "2026-12-21", to: "2026-12-27", name: "期末周",
+        main: "按考试顺序，考前一天只过当天那科",
+        side: "毛概集中背；其他科考完再放" },
+    ];
+
+    function todayStr() {
+      return new Intl.DateTimeFormat("en-CA", { timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+    }
+    function parseDay(s) {
+      const [y,m,d] = s.split("-").map(Number);
+      return Date.UTC(y, m-1, d);
+    }
+    function shiftDay(s, n) {
+      const dt = new Date(parseDay(s));
+      dt.setUTCDate(dt.getUTCDate() + n);
+      return dt.toISOString().slice(0,10);
+    }
+    function weekdayMon(s) {
+      const day = new Date(parseDay(s) + 12 * 3600 * 1000).getUTCDay();
+      return day === 0 ? 7 : day;
+    }
+    function weekOf(s) {
+      return WEEKS.find(w => s >= w.from && s <= w.to) || WEEKS[WEEKS.length-1];
+    }
+    function isWeekend(s) { const d = weekdayMon(s); return d >= 6; }
+
+    function tasksFor(s) {
+      const w = weekOf(s);
+      const weekend = isWeekend(s);
+      const exam = s >= EXAM;
+      return [
+        { id: "main", title: weekend ? "主科练习" : "主科学习", detail: w.main, mins: weekend ? "约 90–120 分钟" : "60–90 分钟" },
+        { id: "side", title: weekend ? "另一门过一遍" : "另一门带一看", detail: w.side, mins: weekend ? "约 40–60 分钟" : "20–30 分钟" },
+        { id: "english", title: "英语 15 分钟", detail: exam ? "可以只留 10 分钟，或今天先暂停" : "戴上耳机背词或复习，大约 15 分钟", mins: exam ? "10–15 分钟" : "15 分钟" },
+      ];
+    }
+
+    function load() {
+      try { return JSON.parse(localStorage.getItem(KEY)) || { checks: {}, bannerDismissed: false }; }
+      catch { return { checks: {}, bannerDismissed: false }; }
+    }
+    function save(data) { localStorage.setItem(KEY, JSON.stringify(data)); }
+
+    function dayCount(data, s) {
+      const row = data.checks[s] || {};
+      return ["main","side","english"].reduce((n,k) => n + (row[k] ? 1 : 0), 0);
+    }
+    function streak(data, today) {
+      let n = 0, cur = today;
+      if (dayCount(data, cur) < 3) cur = shiftDay(cur, -1);
+      while (cur >= START && dayCount(data, cur) === 3) {
+        n += 1;
+        cur = shiftDay(cur, -1);
+      }
+      return n;
+    }
+
+    const data = load();
+    const today = todayStr();
+    const week = weekOf(today);
+
+    const dateLabel = new Intl.DateTimeFormat("zh-CN", {
+      timeZone: TZ, weekday: "long", month: "long", day: "numeric"
+    }).format(new Date());
+    document.getElementById("date-label").textContent = dateLabel + " · " + week.name;
+    document.getElementById("focus").textContent = "这周主攻：" + week.main;
+
+    if (!data.bannerDismissed && !window.navigator.standalone) {
+      document.getElementById("banner").classList.add("show");
+    }
+    document.getElementById("dismiss-banner").onclick = () => {
+      data.bannerDismissed = true;
+      save(data);
+      document.getElementById("banner").classList.remove("show");
+    };
+
+    function toast(msg) {
+      const el = document.getElementById("toast");
+      el.textContent = msg;
+      el.classList.add("show");
+      clearTimeout(toast._t);
+      toast._t = setTimeout(() => el.classList.remove("show"), 1600);
+    }
+
+    function render() {
+      const list = tasksFor(today);
+      const row = data.checks[today] || {};
+      const done = dayCount(data, today);
+      document.getElementById("progress-count").textContent = done + " / 3";
+      document.getElementById("bar").style.width = (done / 3 * 100) + "%";
+      document.getElementById("progress-label").textContent =
+        done === 0 ? "今天还没开始" : done === 3 ? "今天完成了，收工" : "今天已完成 " + done + " 项";
+      document.getElementById("streak").textContent = String(streak(data, today));
+
+      const box = document.getElementById("tasks");
+      box.innerHTML = "";
+      for (const t of list) {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "task" + (row[t.id] ? " done" : "");
+        b.innerHTML = '<div class="tick">✓</div><div><h2></h2><p></p></div><div class="mins"></div>';
+        b.querySelector("h2").textContent = t.title;
+        b.querySelector("p").textContent = t.detail;
+        b.querySelector(".mins").textContent = row[t.id] ? "已打卡" : t.mins;
+        b.addEventListener("click", () => {
+          data.checks[today] = data.checks[today] || {};
+          data.checks[today][t.id] = !data.checks[today][t.id];
+          save(data);
+          const nowDone = dayCount(data, today);
+          if (data.checks[today][t.id] && nowDone === 3) toast("今天三项都打上了");
+          else if (data.checks[today][t.id]) toast("已打卡");
+          render();
+        });
+        box.appendChild(b);
+      }
+
+      const cal = document.getElementById("cal");
+      cal.innerHTML = "";
+      ["一","二","三","四","五","六","日"].forEach(d => {
+        const e = document.createElement("div");
+        e.className = "dow";
+        e.textContent = d;
+        cal.appendChild(e);
+      });
+      const startPad = weekdayMon(START) - 1;
+      for (let i = 0; i < startPad; i++) {
+        cal.appendChild(document.createElement("div"));
+      }
+      for (let s = START; s <= END; s = shiftDay(s, 1)) {
+        const el = document.createElement("div");
+        const n = dayCount(data, s);
+        el.className = "day" + (s === today ? " today" : "") + (n ? " l"+n : "") + (s > today ? " future" : "");
+        el.textContent = String(Number(s.slice(8)));
+        cal.appendChild(el);
+      }
+    }
+    render();
+  </script>
+</body>
+</html>
